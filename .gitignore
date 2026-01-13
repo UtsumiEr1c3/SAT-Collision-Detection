@@ -99,3 +99,10 @@ InitTestScene*.unity*
 /[Aa]ssets/[Ii]nit[Tt]est[Ss]cene*.unity*
 
 .github/
+.vscode/
+.cursor/
+.vs/
+.consulo/
+.gradle/
+.consulo/
+.consulo/
