@@ -19,7 +19,7 @@ using UnityEngine.Internal;
 namespace Common
 {
     /// <summary>
-    ///   <para>A NativeArray2 exposes a buffer of native memory to managed code, making it possible to share data between managed and native without marshalling costs.</para>
+    /// <para>A NativeArray2 exposes a buffer of native memory to managed code, making it possible to share data between managed and native without marshalling costs.</para>
     /// </summary>
     [NativeContainer]
     [DebuggerDisplay("Length = {Length}")]
