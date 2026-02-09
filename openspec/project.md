@@ -5,28 +5,55 @@
 
 - 实现高效的 2D/3D 几何体碰撞检测算法
 - 利用 Unity Burst Compiler 和 Jobs System 实现多线程并行计算
-- 提供可扩展的碰撞检测框架，支持多种几何形状
+- 提供可扩展的碰撞检测框架，支持多种几何形状（凸包、多面体）
 - 优化内存使用，减少 GC 分配，提升运行时性能
+
+### 当前项目状态
+- 已实现核心数据结构：NativeHull（原生凸包）、NativeFace（面）、NativePlane（平面）、NativeHalfEdge（半边）
+- 已实现通用工具：BurstAction（Burst 编译的操作）、DebugDrawer（场景调试可视化）、NativeBuffer（自定义原生缓冲区）
+- 测试类：TestShape、HullTester 用于验证功能
 
 ## Tech Stack
 - **Unity 引擎**: Unity 2022.3.62f1
 - **编程语言**: C# (.NET Framework)
 - **性能优化**:
-  - Unity Burst Compiler - 将 C# 代码编译为优化的原生代码
+  - Unity Burst Compiler (v1.8.25) - 将 C# 代码编译为优化的原生代码
   - Unity Jobs System - 多线程并行计算框架
   - Unity Collections - 高性能原生集合类型（NativeArray, NativeBuffer）
-- **内存管理**: 
+  - Unity Mathematics - 高性能数学库（float3, 四元数等）
+- **内存管理**:
   - Unity.Collections.LowLevel.Unsafe - 底层内存操作
   - 自定义 NativeBuffer 和 NativeArrayNoLeakDetection 实现
+
+## Project Structure
+
+```
+Assets/Scripts/
+├── Common/                      # 通用工具类命名空间
+│   ├── BurstAction.cs          # Burst 编译的泛型操作执行器
+│   ├── DebugDrawer.cs          # 场景视图调试绘制工具
+│   ├── NativeBuffer.cs         # 自定义原生缓冲区（NativeList 替代品）
+│   ├── NativeArrayNoLeakDetection.cs  # 跳过泄漏检测的 NativeArray
+│   └── UnityColors.cs          # Unity 颜色工具
+├── UnityNativeHull/            # 原生几何体数据结构
+│   ├── NativeHull.cs           # 原生凸包结构（顶点、面、边）
+│   ├── NativeFace.cs           # 面数据结构
+│   ├── NativePlane.cs          # 平面数据结构
+│   └── NativeHalfEdge.cs       # 半边数据结构
+├── TestShape.cs                # 测试形状结构体
+└── HullTester.cs              # 凸包测试器
+```
 
 ## Project Conventions
 
 ### Code Style
-- **命名空间**: 使用 `Common` 命名空间组织通用工具类
-- **命名约定**: 
+- **命名空间**:
+  - `Common` - 通用工具类（BurstAction, DebugDrawer, NativeBuffer, NativeArrayNoLeakDetection, UnityColors）
+  - `UnityNativeHull` - 原生几何体相关结构（NativeHull, NativeFace, NativePlane, NativeHalfEdge）
+- **命名约定**:
   - 接口以 `I` 开头（如 `IBurstOperation`, `IDebugDrawing`）
-  - 结构体使用 PascalCase（如 `BurstRefAction`, `NativeBuffer`）
-  - 私有字段使用 `_` 前缀（如 `_maxIndex`, `_lastFrame`）
+  - 结构体使用 PascalCase（如 `BurstRefAction`, `NativeBuffer`, `TestShape`）
+  - 私有字段使用 `_` 前缀（如 `_maxIndex`, `_lastFrame`, `_isCreated`）
 - **注释规范**:
   - 使用 XML 文档注释（`/// <summary>`）为公共 API 提供文档
   - 关键算法和复杂逻辑使用中文注释说明
@@ -34,6 +61,9 @@
 - **代码组织**:
   - 相关功能组织在同一命名空间下
   - 使用 `#if UNITY_EDITOR` 条件编译区分编辑器代码
+  - Assets/Scripts/Common - 通用工具类
+  - Assets/Scripts/UnityNativeHull - 凸包和几何体数据结构
+  - Assets/Scripts/ - 测试和示例代码
 
 ### Architecture Patterns
 - **Burst 编译优化**: 
@@ -53,18 +83,26 @@
   - 支持绘制多边形、球体、箭头、圆形等调试图形
 
 ### Testing Strategy
-- 当前项目尚未建立完整的测试框架
-- 建议添加：
-  - 单元测试验证碰撞检测算法的正确性
+- **当前测试方法**:
+  - 使用 `TestShape` 结构体进行形状数据测试
+  - 使用 `HullTester` 类进行凸包功能测试
+  - 场景视图中使用 `DebugDrawer` 可视化验证
+- **未来测试计划**:
+  - 添加 Unity Test Framework 单元测试验证碰撞检测算法的正确性
   - 性能测试确保 Burst 编译后的性能提升
-  - 边界情况测试（空集合、零向量、重叠几何体等）
+  - 边界情况测试（空集合、零向量、重叠几何体、退化情况等）
+  - 压力测试（大量并发碰撞检测）
 
 ### Git Workflow
-- 当前未明确指定 Git 工作流
-- 建议采用：
-  - 功能分支开发（feature branches）
-  - 提交信息使用中文或英文，清晰描述变更内容
-  - 重要功能变更前创建 OpenSpec 提案（参考 `openspec/AGENTS.md`）
+- **提交信息格式**: 使用约定式提交（Conventional Commits）格式：
+  - 格式：`<type>(scope) description`
+  - 示例：`<feat>(test) add TestShape`、`<feat>(NativeHull) add NativeHull struct`、`<style>(space)delete space`
+  - 常见类型：`feat`（新功能）、`update`（更新）、`style`（代码格式）、`fix`（修复）
+- **分支策略**:
+  - 当前在 `main` 分支上进行开发
+  - 建议：功能分支开发（feature branches）用于大型功能
+- **重要变更**:
+  - 重大功能变更前创建 OpenSpec 提案（参考 `openspec/` 目录）
 
 ## Domain Context
 - **分离轴定理（SAT）**: 
@@ -97,11 +135,15 @@
   - 泛型类型参数需要明确约束以确保类型安全
 
 ## External Dependencies
-- **Unity 包**:
-  - `Unity.Burst` - Burst 编译器
+- **Unity 包**（来自 Packages/manifest.json）:
+  - `com.unity.burst` (v1.8.25) - Burst 编译器
   - `Unity.Collections` - 原生集合类型
   - `Unity.Jobs` - Jobs 系统
-  - `Unity.Mathematics` - 高性能数学库（如使用）
+  - `Unity.Mathematics` - 高性能数学库
+  - `com.unity.textmeshpro` (v3.0.7) - 文本渲染
+  - `com.unity.ugui` (v1.0.0) - Unity UI 系统
+  - `com.unity.visualscripting` (v1.9.4) - 可视化脚本
+  - `com.boxqkrtm.ide.cursor` - 自定义 IDE 集成（本地包）
 - **Unity 编辑器功能**:
   - `UnityEditor.Handles` - 场景视图绘制（仅编辑器）
   - `UnityEditor.SceneView` - 场景视图事件（仅编辑器）
