@@ -816,7 +816,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 895030712}
-  - component: {fileID: 895030711}
+  - component: {fileID: 895030713}
   m_Layer: 0
   m_Name: CollisionTester
   m_TagString: Untagged
@@ -824,18 +824,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &895030711
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 895030710}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: fe5597794b86a8445bff420f6db6c851, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!4 &895030712
 Transform:
   m_ObjectHideFlags: 0
@@ -855,6 +843,26 @@ Transform:
   - {fileID: 843894471}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &895030713
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 895030710}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 81430a83a6adf064387ba88d2ba58ed8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  Transforms:
+  - {fileID: 552615061}
+  - {fileID: 1684599809}
+  - {fileID: 2000962621}
+  - {fileID: 843894471}
+  IsDrawCollided: 0
+  IsDrawIntersection: 0
+  IsLogContact: 0
 --- !u!43 &968413396
 Mesh:
   m_ObjectHideFlags: 0

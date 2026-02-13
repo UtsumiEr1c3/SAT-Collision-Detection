@@ -1,0 +1,82 @@
+schema: spec-driven
+
+context: |
+  # SAT Collision Detection System | SAT 碰撞检测系统
+  High-performance collision detection using Separating Axis Theorem (SAT) in Unity.
+  基于分离轴定理(SAT)的高性能 Unity 碰撞检测系统。
+
+  ## Tech Stack | 技术栈
+  - Unity 2022.3.62f1, C# (.NET Framework)
+  - Unity Burst Compiler (v1.8.25), Jobs System, Collections, Mathematics
+    Burst编译器用于SIMD优化，Jobs系统实现多线程并行，Collections提供原生内存容器
+
+  ## Project Structure | 项目结构
+  Assets/Scripts/
+    Common/           - 通用工具库
+      BurstAction           : Burst编译的泛型Job操作封装
+      DebugDrawer           : Scene视图调试绘制工具(多边形/球体/箭头等)
+      NativeBuffer          : 替代NativeList的高性能缓冲区
+      NativeArrayNoLeakDetection : 去除泄漏检测的NativeArray变体
+      UnityColors           : 颜色工具和扩展方法
+
+    UnityNativeHull/  - 几何结构(凸包相关)
+      NativeHull            : 凸包主结构(顶点/面/平面/半边)
+      NativeFace            : 面结构(存储起始边索引)
+      NativePlane           : 平面结构(法向量+偏移量，支持点到平面距离计算)
+      NativeHalfEdge        : 半边数据结构(Prev/Next/Twin/Origin)
+
+    TestShape.cs      - 测试形状(ID + NativeHull)
+    HullTester.cs     - MonoBehaviour测试器(管理凸包创建和碰撞检测)
+
+  ## Conventions | 编码规范
+  - Namespaces | 命名空间:
+    * `Common`: utilities | 通用工具
+    * `UnityNativeHull`: geometry structs | 几何结构体
+
+  - Naming | 命名约定:
+    * Interfaces prefix `I` | 接口以I开头
+    * PascalCase for structs/classes | 类型用大驼峰
+    * `_` prefix for private fields | 私有字段用下划线前缀
+
+  - Documentation | 文档注释:
+    * XML doc comments (`/// <summary>`) for public API | 公共API用XML文档注释
+    * Chinese comments for algorithm implementation notes | 算法实现细节用中文注释
+
+  - Editor code | 编辑器代码:
+    * Guard with `#if UNITY_EDITOR` | 编辑器专用代码必须用条件编译保护
+
+  - Git commits | 提交规范:
+    * Format: `<type>(scope) description` | 格式: <类型>(范围) 描述
+    * Example: `<feat>(NativeHull) add NativeHull struct` | 例如: <feat>(NativeHull) add NativeHull struct
+
+  ## Architecture | 架构设计
+  - Burst compilation | Burst编译:
+    * Use `[BurstCompile]` attribute on compute paths | 计算密集路径标记[BurstCompile]
+    * Structs implement `IJob`/`IJobParallelFor` | 结构体实现IJob/IJobParallelFor接口
+    * Only blittable/unmanaged types allowed | 仅允许blittable/unmanaged类型
+    * Use `[BurstDiscard]` for managed code fallbacks | 托管代码回退用[BurstDiscard]
+
+  - Memory management | 内存管理:
+    * Prefer `NativeBuffer<T>` over `NativeList<T>` | 优先使用NativeBuffer而非NativeList (Burst Job稳定性)
+    * All Native collections must be Disposed | 所有Native容器必须手动Dispose
+    * Minimize GC allocations | 最小化GC分配(性能关键路径零分配)
+
+  - Debugging | 调试:
+    * Use `DebugDrawer` for scene-view visualization | 用DebugDrawer在Scene视图可视化
+
+  ## Domain Knowledge | 领域知识
+  - SAT (Separating Axis Theorem) | 分离轴定理:
+    * Core principle: if two convex shapes don't intersect, there exists a separating axis
+      核心原理: 若两个凸形状不相交，则存在一条分离轴
+    * Test all potential separating axes (face normals + edge cross products)
+      测试所有潜在分离轴(面法线 + 边的叉积)
+
+  - Half-edge data structure | 半边数据结构:
+    * Efficient convex hull topology representation | 高效的凸包拓扑表示
+    * Each edge stores: origin vertex, twin edge, prev/next in face loop
+      每条边存储: 起点顶点、对偶边、面环中的前后边
+
+  - Performance requirements | 性能要求:
+    * Target: hundreds/thousands of collision checks per frame | 目标: 每帧数百至数千次碰撞检测
+    * Must be GC-free (zero managed allocations in hot path) | 热路径必须零GC分配
+    * Leverage SIMD via Burst compiler | 通过Burst编译器利用SIMD指令
